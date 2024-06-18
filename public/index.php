@@ -63,7 +63,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <title>Calcular Precio de Electrodoméstico</title>
     <link href="./css/tailwind.css" rel="stylesheet">
-    <link href="./styles.css" rel="stylesheet"> <!-- Incluyendo estilo adicional para ajustar la interfaz de usuario -->
 </head>
 <body class="bg-gradient-to-r from-pink-400 via-pink-500 to-red-500 flex items-center justify-center min-h-screen">
     <div class="container mx-auto p-4">
