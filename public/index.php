@@ -1,24 +1,60 @@
 <?php
-session_start();
-
-if (!isset($_SESSION['productos'])) {
-    $_SESSION['productos'] = [];
+// Función para calcular el precio total basado en el precio unitario y la cantidad
+// Función para calcular el precio total basado en el precio unitario y la cantidad
+function calcularPrecio($precio, $cantidad) {
+    return $precio * $cantidad;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nombre = $_POST['nombre'];
-    $precio = floatval($_POST['precio']);
-    $cantidad = intval($_POST['cantidad']);
+// Función para agregar un producto a un arreglo o lista y calcular su valor total
+function agregarProducto($nombre, $precio, $cantidad) {
+    $valorTotal = calcularPrecio($precio, $cantidad);
 
-    $producto = [
-        'nombre' => $nombre,
-        'precio' => $precio,
-        'cantidad' => $cantidad
-    ];
+    // Devuelve un array con la información del producto
+    return array(
+        'Nombre' => htmlspecialchars($nombre),
+        'Precio' => number_format($precio, 2),
+        'Cantidad' => $cantidad,
+        'ValorTotal' => number_format($valorTotal, 2),
+        'Estado' => $cantidad > 0 ? 'En stock' : 'Agotado'
+    );
+}
 
-    array_push($_SESSION['productos'], $producto);
-    header('Location: index.php');
-    exit();
+// Función para mostrar la información general del producto
+function mostrarInformacionGeneral($producto) {
+    echo '<div class="mt-8">';
+    echo '<h3 class="text-2xl mb-4 text-center text-gray-800 font-bold">Información del Producto</h3>';
+    echo '<table class="min-w-full bg-white rounded-lg overflow-hidden">';
+    echo '<thead>';
+    echo '<tr class="bg-gray-200 text-gray-700">';
+    echo '<th class="py-2 px-4">Característica</th>';
+    echo '<th class="py-2 px-4">Valor</th>';
+    echo '</tr>';
+    echo '</thead>';
+    echo '<tbody>';
+    foreach ($producto as $caracteristica => $valor) {
+        echo '<tr>';
+        echo '<td class="py-2 px-4">' . $caracteristica . '</td>';
+        echo '<td class="py-2 px-4">' . $valor . '</td>';
+        echo '</tr>';
+    }
+    echo '</tbody>';
+    echo '</table>';
+    echo '</div>';
+}
+
+// Manejo del formulario POST
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $nombre = $_POST['name'] ?? '';
+    $precio = $_POST['precio'] ?? '';
+    $cantidad = $_POST['cantidad'] ?? '';
+
+    // Validar datos de entrada
+    if (empty($nombre) || !is_numeric($precio) || !is_numeric($cantidad)) {
+        echo 'Por favor, rellene todos los campos correctamente.';
+    } else {
+        $producto = agregarProducto($nombre, floatval($precio), intval($cantidad));
+        $_SESSION['productos'][] = $producto;
+    }
 }
 ?>
 
@@ -26,66 +62,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Gestión de Productos del Minimarket</title>
+    <title>Calcular Precio de Electrodoméstico</title>
     <link href="./css/tailwind.css" rel="stylesheet">
+    <link href="./styles.css" rel="stylesheet"> <!-- Incluyendo estilo adicional para ajustar la interfaz de usuario -->
 </head>
-<body class="bg-gradient-to-r from-green-400 to-blue-500 min-h-screen flex items-center justify-center p-6">
-    <div class="container mx-auto max-w-2xl bg-green-400 p-8 rounded-lg shadow-lg">
-        <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">Agregar Producto</h1>
-        <form id="productForm" action="" method="POST" class="space-y-4">
-            <div>
-                <label for="nombre" class="block text-lg font-semibold text-gray-700">Nombre del Producto:</label>
-                <input type="text" id="nombre" name="nombre" class="mt-2 w-full p-3 rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                <span class="text-red-500 text-sm" id="error-nombre"></span>
+<body class="bg-gradient-to-r from-pink-400 via-pink-500 to-red-500 flex items-center justify-center min-h-screen">
+    <div class="container mx-auto p-4">
+        <div class="bg-white rounded-lg shadow-md p-8 flex flex-wrap md:flex-nowrap">
+            <div class="w-full md:w-1/2 p-4">
+                <h2 class="text-4xl mb-6 text-center text-gray-800 font-bold">Calcular Precio de Electrodoméstico</h2>
+                <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" class="space-y-4" id="miFormulario">
+                    <div>
+                        <label for="name" class="block text-gray-700">Nombre</label>
+                        <input type="text" id="name" name="name" class="mt-1 p-2 w-full border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent" required>
+                    </div>
+                    <div>
+                        <label for="precio" class="block text-gray-700">Precio</label>
+                        <input type="text" id="precio" name="precio" class="mt-1 p-2 w-full border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent" required>
+                    </div>
+                    <div>
+                        <label for="cantidad" class="block text-gray-700">Cantidad</label>
+                        <input type="text" id="cantidad" name="cantidad" class="mt-1 p-2 w-full border rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent" required>
+                    </div>
+                    <button type="submit" class="w-full bg-pink-500 text-white p-2 rounded-lg hover:bg-pink-600 transition duration-300">Ingresar</button>
+                </form>
             </div>
-            <div>
-                <label for="precio" class="block text-lg font-semibold text-gray-700">Precio por Unidad:</label>
-                <input type="text" id="precio" name="precio" class="mt-2 w-full p-3 rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                <span class="text-red-500 text-sm" id="error-precio"></span>
-            </div>
-            <div>
-                <label for="cantidad" class="block text-lg font-semibold text-gray-700">Cantidad en Inventario:</label>
-                <input type="text" id="cantidad" name="cantidad" class="mt-2 w-full p-3 rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                <span class="text-red-500 text-sm" id="error-cantidad"></span>
-            </div>
-            <button type="submit" class="w-full bg-blue-600 text-gray-700 py-3 px-4 rounded-lg hover:bg-blue-700 transition duration-300">Guardar Producto</button>
-        </form>
 
-        <h2 class="text-2xl font-bold mt-10 mb-6 text-center text-gray-800">Lista de Productos</h2>
-        <div class="bg-gray-50 p-6 rounded-lg shadow-lg">
-            <?php if (isset($_SESSION['productos']) && count($_SESSION['productos']) > 0): ?>
-                <table class="min-w-full bg-white rounded-lg overflow-hidden">
-                    <thead class="bg-blue-500 text-white">
-                        <tr>
-                            <th class="py-3 px-4">Nombre del Producto</th>
-                            <th class="py-3 px-4">Precio por Unidad</th>
-                            <th class="py-3 px-4">Cantidad en Inventario</th>
-                            <th class="py-3 px-4">Valor Total</th>
-                            <th class="py-3 px-4">Estado en Stock</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-gray-700">
-                        <?php foreach ($_SESSION['productos'] as $producto): ?>
-                            <?php
-                            $valorTotal = $producto['precio'] * $producto['cantidad'];
-                            $estado = $producto['cantidad'] > 0 ? 'En stock' : 'Agotado';
-                            ?>
-                            <tr class="border-b">
-                                <td class="py-3 px-4"><?= htmlspecialchars($producto['nombre']) ?></td>
-                                <td class="py-3 px-4"><?= number_format($producto['precio'], 2) ?></td>
-                                <td class="py-3 px-4"><?= $producto['cantidad'] ?></td>
-                                <td class="py-3 px-4"><?= number_format($valorTotal, 2) ?></td>
-                                <td class="py-3 px-4"><?= $estado ?></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php else: ?>
-                <p class="text-center text-gray-700">No hay productos registrados.</p>
-            <?php endif; ?>
+            <?php if (isset($producto)) { ?>
+            <div class="w-full md:w-1/2 p-4">
+                <?php mostrarInformacionGeneral($producto); ?>
+            </div>
+            <?php } ?>
         </div>
     </div>
-
-    <script src="validacion.js"></script>
 </body>
+<script src="scripts.js"></script>
 </html>
