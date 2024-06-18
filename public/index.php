@@ -1,6 +1,5 @@
 <?php
 // Función para calcular el precio total basado en el precio unitario y la cantidad
-// Función para calcular el precio total basado en el precio unitario y la cantidad
 function calcularPrecio($precio, $cantidad) {
     return $precio * $cantidad;
 }
